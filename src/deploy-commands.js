@@ -49,3 +49,30 @@ const rest = new REST().setToken(discordToken);
     }
 }
 )();
+
+(async() => {
+    try
+    {
+        console.log(`Started refreshing ${client.commands.length} application (/) commands.`);
+        //put method is used to fully refresh all commands in the guild with the current set
+
+		const commandsJson = [];
+		var commandsArray = Array.from(client.commands.values()).reduce((x, obj) => {
+			x.push(obj.data);
+			return x;
+		}, []).forEach(function(obj)
+		{
+			commandsJson.push(obj);
+		});
+
+        const data = await rest.put(
+            Routes.applicationCommands(process.env.DISCORD_CLIENT_ID),
+            {body: commandsJson},
+        );
+    }
+    catch(error)
+    {
+        console.error(error);
+    }
+} 
+)();
