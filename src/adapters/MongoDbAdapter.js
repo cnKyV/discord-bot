@@ -85,14 +85,10 @@ async function updateOne(updateModel)
 {
     let collectionName;
 
-
-
     if(updateModel instanceof UserUpdateModel && updateModel.id != null)
     {
         collectionName = 'user';
     }
-
-
 
     if(collectionName !== undefined)
     {
@@ -106,30 +102,41 @@ async function updateOne(updateModel)
             const id = new ObjectId(updateModel.id);
 
             const user = updateModel.toObject();
+            
             delete user.id;
             delete user._id;
 
             const result = await collection.updateOne({_id: id}, {$set: user});
 
-            console.log(`[INFO] A document has succesfully been inserted with the coıunt of ${result.modifiedCount}`);
+            console.log(`[INFO] A document has succesfully been inserted with the count of ${result.modifiedCount}`);
         }
     }
-
-
 }
 
-async function removeOne(id)
+async function removeOne(id, collectionName)
 {
+    let collection;
 
+    if(!(id instanceof ObjectId))
+        id = new ObjectId(id);
+
+    if(collectionName === 'user')
+        collection = collectionName;
+
+    if(collection !== undefined)
+    {
+        const isConnected = await openConnection();
+
+        if(isConnected)
+        {
+            const db = client.db(dbName);
+            const collection = db.collection(collectionName);
+
+            const result = await collection.deleteOne({_id : id});
+            console.log(`[INFO] A document has been deleted with the Id of: ${id}. `);
+        }
+    }
 }
 
-var user = new User({name:'Cenkay',discordUserId:'Any',email:'Test',experience:1,level:1,password:'test'});
-var userUpdate = new UserUpdateModel({id:'64e9fe5059cccb931a79b89b',name:'CHANGED',discordUserId:'CHANGED',email:'CHANGED',experience:1,level:1,password:'CHANGED'});
-var log = new Log({discordUserIds:['sdfs','sdfasdf'],message:'LOL',type:'ERROR'});
-(async()=>{
-    await updateOne(userUpdate);
-    await closeConnection();
-}
-)();
-
+module.exports = {insertOne, removeOne, updateOne};
 
