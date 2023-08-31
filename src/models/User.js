@@ -7,7 +7,8 @@ const userSchema = new mongoose.Schema({
     password: {type: String, required: false, select: false},
     discordUserId: {type: String, required: true},
     level:{type:Number, required:true, select:false},
-    experience:{type:Number,required:true, select:false}
+    experience:{type:Number,required:true, select:false},
+    joinedDate: {type:Date, required:true}
 });
 
 const userUpdateSchema = new mongoose.Schema({
