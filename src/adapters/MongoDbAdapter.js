@@ -138,5 +138,94 @@ async function removeOne(id, collectionName)
     }
 }
 
-module.exports = {insertOne, removeOne, updateOne};
+async function getOne(id, collectionName)
+{
+    let _collection;
+
+    if(!(id instanceof ObjectId))
+        id = new ObjectId(id);
+
+    if(collectionName === 'user')
+        _collection = collectionName;
+
+    if(collectionName === 'log')
+        _collection = collectionName;
+
+
+    if(_collection !== undefined)
+    {
+        const isConnected = await openConnection();
+
+        if(isConnected)
+        {
+            const db = client.db(dbName);
+            const collection = db.collection(collectionName);
+
+            const result = await collection.findOne({_id:id});
+
+            return result;
+        }
+    }
+}
+
+async function getOneByDiscordId(discordId, collectionName)
+{
+    let _collection;
+
+    if(collectionName === 'user')
+        _collection = collectionName;
+
+    if(collectionName === 'log')
+        _collection = collectionName;
+
+
+    if(_collection !== undefined)
+    {
+        const isConnected = await openConnection();
+
+        if(isConnected)
+        {
+            const db = client.db(dbName);
+            const collection = db.collection(collectionName);
+
+            const result = await collection.findOne({discordUserId:discordId});
+            const user = new User(result);
+            
+            return user;
+        }
+    }
+}   
+
+async function getAll(collectionName)
+{
+    let _collection;
+
+    if(collectionName === 'user')
+        _collection = collectionName;
+
+    if(collectionName === 'log')
+        _collection = collectionName;
+
+    if(_collection !== undefined)
+    {
+        const isConnected = await openConnection();
+
+        if(isConnected)
+        {
+            const db = client.db(dbName);
+            const collection = db.collection(_collection);
+
+            const result = await collection.find().toArray();
+
+            return result;
+        }
+    }
+    
+}
+
+(async()=>{
+    const result = await getOneByDiscordId('1234567','user');
+})()
+
+module.exports = {insertOne, removeOne, updateOne, getOne, getAll, getOneByDiscordId};
 
