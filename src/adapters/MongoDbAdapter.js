@@ -3,229 +3,161 @@ var ObjectId = require('mongodb').ObjectId;
 const {User} = require('../models/User');
 const {UserUpdateModel} = require('../models/User');
 const Log = require('../models/Log');
+const Collection = require('../consts/InfrastructureConsts');
 const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '../../.env') });
 
-const url = process.env.MONGODB_URL;
-const dbName = process.env.MONGODB_DBNAME;
 
-const client = new MongoClient(url, {useNewUrlParser: true, useUnifiedTopology: true});
+class MongoAdapter{
+    constructor(url, dbName)
+    {
+        this.url = url;
+        this.dbName = dbName;
+        this.client = new MongoClient(url, {useNewUrlParser: true, useUnifiedTopology: true});
+    }
 
-async function openConnection()
-{
-    try{
-        await client.connect();
-        const isConnected = client.topology.isConnected();
-        if(isConnected)
-        {
+    async connect(){
+        try{
+            await this.client.connect();
+
             console.log(`[INFO] Connection is established.`);
+
             return true;
+            
+        } catch(err){
+            console.error(`[ERROR] Connection could not be established. Error message: ${err}`);
+
+            return false;
         }
 
-        return false;
     }
-    catch(err){
-        console.error(`[ERROR] Connection could not be established. Error Message: ${err}`);
-        return false;
-    }
-}
 
-async function closeConnection()
-{
-    try{
-        const isConnected = client.topology.isConnected();
+    async close(){
+        try{
 
-        if(isConnected)
-        {
-            console.log(`[INFO] Closing the connection.`);
-            await client.close();
+            console.log('[INFO] Closing the connection.');
+            await this.client.close();
+
+        } catch(err){
+            console.error(`[ERROR] Error occured while closing the connection. Error message: ${err}`);
         }
     }
-    catch(err){
-        console.error(`[ERROR] Error occured while checking the connection status. Error Message: ${err}`);
+
+    isConnected(){
+        return this.client.topology.isConnected();
     }
-}
 
-async function insertOne(entity)
-{
-    let collectionName;
+    getCollection(collectionName)
+    {
+        if(this.isConnected()){
+            return this.client.db(this.dbName).collection(collectionName);
+        } else{
+            console.error('[ERROR] Database connection is not established.');
+            return null;
+        }
+    }
 
-    if( entity instanceof User)
-        collectionName = 'user';
-
-    if(entity instanceof Log)
-        collectionName = 'log';
-
-    if(collectionName !== undefined)
+    async insertOne(entity, collectionName)
     {
         try
-        {
-            const isConnectionEstablished = await openConnection();
-
-            if(isConnectionEstablished)
+        {    
+            if(this.isConnected())
             {
-                const db = client.db(dbName);
-                const collection = db.collection(collectionName);
-    
+                const collection = this.getCollection(collectionName);
+                if(!collection) return;
+
                 const result = await collection.insertOne(entity);
-    
+
                 console.log(`[INFO] A document has succesfully been inserted with the Id of ${result.insertedId}`);
             }
-            else
-                console.error(`[ERROR] Couldn't establish connection`);
         }
         catch(err)
         {
             console.error(`[ERROR] An error occurred whilst trying to insert a record. Error Message: ${err}`);
         }
-    }
-}
-
-async function updateOne(updateModel)
-{
-    let collectionName;
-
-    if(updateModel instanceof UserUpdateModel && updateModel.id != null)
-    {
-        collectionName = 'user';
+        
     }
 
-    if(collectionName !== undefined)
+    async updateOne(updateModel, collectionName)
     {
-        const isConnectionEstablished = await openConnection();
-
-        if(isConnectionEstablished)
-        {
-            const db = client.db(dbName);
-            const collection = db.collection(collectionName);
-
-            const id = new ObjectId(updateModel.id);
-
-            const user = updateModel.toObject();
-            
-            delete user.id;
-            delete user._id;
-
-            const result = await collection.updateOne({_id: id}, {$set: user});
-
-            console.log(`[INFO] A document has succesfully been inserted with the count of ${result.modifiedCount}`);
+        try{
+            if(this.isConnected())
+            {
+                const collection = this.getCollection(collectionName);
+                if(!collection) return;
+    
+                const id = new ObjectId(updateModel.id);
+    
+                const user = updateModel.toObject();
+                
+                delete user.id;
+                delete user._id;
+    
+                const result = await collection.updateOne({_id: id}, {$set: user});
+    
+                if(result.modifiedCount > 0)
+                    console.log('[INFO] Record has been succesfully updated.');
+            }
+        } catch(err){
+            console.error(`[ERROR] Error occurred whilst trying to update a record with the Id of: ${updateModel.id}. Error message: ${err}`);
         }
     }
-}
-
-async function removeOne(id, collectionName)
-{
-    let collection;
-
-    if(!(id instanceof ObjectId))
-        id = new ObjectId(id);
-
-    if(collectionName === 'user')
-        collection = collectionName;
-
-    if(collection !== undefined)
+    async removeOne(id, collectionName)
     {
-        const isConnected = await openConnection();
+        if(!(id instanceof ObjectId))
+            id = new ObjectId(id);
 
-        if(isConnected)
+        if(this.isConnected())
         {
-            const db = client.db(dbName);
-            const collection = db.collection(collectionName);
+            const collection = this.getCollection(collectionName);
+            await collection.deleteOne({_id : id});
 
-            const result = await collection.deleteOne({_id : id});
-            console.log(`[INFO] A document has been deleted with the Id of: ${id}. `);
+            console.log(`[INFO] A document has been deleted with the Id of: ${id}.`);
         }
+        
     }
-}
 
-async function getOne(id, collectionName)
-{
-    let _collection;
-
-    if(!(id instanceof ObjectId))
-        id = new ObjectId(id);
-
-    if(collectionName === 'user')
-        _collection = collectionName;
-
-    if(collectionName === 'log')
-        _collection = collectionName;
-
-
-    if(_collection !== undefined)
-    {
-        const isConnected = await openConnection();
-
-        if(isConnected)
+    async getOne(id, collectionName)
+    {   
+        if(!(id instanceof ObjectId))
+            id = new ObjectId(id);
+    
+        if(this.isConnected())
         {
-            const db = client.db(dbName);
-            const collection = db.collection(collectionName);
-
+            const collection = this.getCollection(collectionName);
             const result = await collection.findOne({_id:id});
 
-            return result;
-        }
-    }
-}
-
-async function getOneByDiscordId(discordId, collectionName)
-{
-    let _collection;
-
-    if(collectionName === 'user')
-        _collection = collectionName;
-
-    if(collectionName === 'log')
-        _collection = collectionName;
-
-
-    if(_collection !== undefined)
-    {
-        const isConnected = await openConnection();
-
-        if(isConnected)
-        {
-            const db = client.db(dbName);
-            const collection = db.collection(collectionName);
-
-            const result = await collection.findOne({discordUserId:discordId});
             const user = new User(result);
-            
+            return result;
+        }        
+    }
+
+    async getOneByDiscordId(discordId, collectionName)
+    {
+        if(this.isConnected())
+        {
+            const collection = this.getCollection(collectionName);
+            const result = await collection.findOne({discordUserId:discordId});
+
+            const user = new User(result);        
             return user;
         }
-    }
-}   
+    }   
 
-async function getAll(collectionName)
-{
-    let _collection;
-
-    if(collectionName === 'user')
-        _collection = collectionName;
-
-    if(collectionName === 'log')
-        _collection = collectionName;
-
-    if(_collection !== undefined)
+    async getAll(collectionName)
     {
-        const isConnected = await openConnection();
-
-        if(isConnected)
+        if(this.isConnected())
         {
-            const db = client.db(dbName);
-            const collection = db.collection(_collection);
-
+            const collection = this.getCollection(collectionName);
             const result = await collection.find().toArray();
 
             return result;
         }
+        
+        
     }
     
 }
 
-(async()=>{
-    const result = await getOneByDiscordId('1234567','user');
-})()
-
-module.exports = {insertOne, removeOne, updateOne, getOne, getAll, getOneByDiscordId};
+module.exports = MongoAdapter;
 
