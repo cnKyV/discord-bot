@@ -51,6 +51,18 @@ class UserRepository{
         await db.connect();
         const result = await db.removeOneByDiscordId(discordId,Collection.User);
     }
+
+    async getUser(discordId)
+    {
+        await db.connect();
+        return await db.getOneByDiscordId(discordId, Collection.User);
+    }
+
+    async getAllUsers()
+    {
+        await db.connect();
+        return await db.getAll(Collection.User);
+    }
 }
 
 module.exports = UserRepository;
