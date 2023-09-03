@@ -78,7 +78,7 @@ class MongoAdapter{
         
     }
 
-    async updateOne(updateModel, collectionName)
+    async updateOne(user, collectionName)
     {
         try{
             if(this.isConnected())
@@ -86,9 +86,9 @@ class MongoAdapter{
                 const collection = this.getCollection(collectionName);
                 if(!collection) return;
     
-                const id = new ObjectId(updateModel.id);
+                const id = new ObjectId(user.id);
     
-                const user = updateModel.toObject();
+               user = user.toObject();
                 
                 delete user.id;
                 delete user._id;
@@ -117,6 +117,17 @@ class MongoAdapter{
         
     }
 
+    async removeOneByDiscordId(discordId, collectionName)
+    {
+        if(this.isConnected())
+        {
+            const collection = this.getCollection(collectionName);
+            await collection.deleteOne({discordUserId:discordId});
+
+            console.log(`[INFO] A document has been deleted with the Id of: ${id}.`);
+        }
+        
+    }
     async getOne(id, collectionName)
     {   
         if(!(id instanceof ObjectId))

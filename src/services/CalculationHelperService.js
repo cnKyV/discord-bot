@@ -1,31 +1,36 @@
 const UserConst = require('../consts/UserConsts');
 const {User} = require('../models/User');
 
-async function returnTotalExpAndLevel(user, letters) //public
-{
-    if(!(user instanceof User))
-        throw new TypeError(`Method returnTotalExpAndLevel parameter is not a type of User! It is type of: ${typeof user}`);
 
-        let totalExp = user.experience + letters;
-
-    while(totalExp > 0)
+class CalculationHelper{
+    static async ReturnTotalExpAndLevel(user, letters)
     {
-        const requiredExp = UserConst.Level[user.level+1];
-
-        if(totalExp >= requiredExp)
+        if(!(user instanceof User))
+            throw new TypeError(`Method returnTotalExpAndLevel parameter is not a type of User! It is type of: ${typeof user}`);
+    
+            let totalExp = user.experience + letters;
+    
+        while(totalExp > 0)
         {
-            user.level = user.level + 1;
-            totalExp = totalExp - requiredExp;
+            const requiredExp = UserConst.Level[user.level+1];
+    
+            if(totalExp >= requiredExp)
+            {
+                user.level = user.level + 1;
+                totalExp = totalExp - requiredExp;
+            }
+            else
+            {
+                totalExp = 0;
+            }
         }
-        else
-        {
-            totalExp = 0;
-        }
+    
+        user.experience = user.experience + letters;
+    
+        return user;
     }
-
-    user.experience = user.experience + letters;
-
-    return user;
 }
 
-module.exports = {returnTotalExpAndLevel};
+
+
+module.exports = CalculationHelper;
