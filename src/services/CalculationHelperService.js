@@ -1,5 +1,5 @@
 const UserConst = require('../consts/UserConsts');
-const {User} = require('../models/User');
+const User = require('../models/User');
 
 
 class CalculationHelper{

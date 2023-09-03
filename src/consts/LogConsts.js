@@ -2,13 +2,15 @@ class LogConsts{
     static Level = {
         Information : 'INFO',
         Warning : 'WARN',
-        Error : 'ERROR'
+        Error : 'ERROR',
+        Any : 'Any'
     }
 
     static Type = {
         General : 'General',
         Moderator : 'Mod',
-        Admin : 'Admin'
+        Admin : 'Admin',
+        Any : 'Any'
     }
 }
 

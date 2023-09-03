@@ -1,10 +1,14 @@
 const path = require('path');
 const fs = require('fs');
 require('dotenv').config({ path: path.join(__dirname, '../.env') });
-const { Routes, REST, Client, Collection, GatewayIntentBits,SlashCommandBuilder } = require('discord.js');
+const { Routes, REST, Client, Collection, GatewayIntentBits } = require('discord.js');
 
 
-const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+const client = new Client({ intents: 
+	[GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent,
+] });
 
 client.commands = new Collection();
 const foldersPath = path.join(__dirname, 'commands');

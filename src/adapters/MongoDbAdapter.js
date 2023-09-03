@@ -1,6 +1,6 @@
 const {MongoClient} = require('mongodb');
 var ObjectId = require('mongodb').ObjectId;
-const {User} = require('../models/User');
+const User = require('../models/User');
 const {UserUpdateModel} = require('../models/User');
 const Log = require('../models/Log');
 const Collection = require('../consts/InfrastructureConsts');
@@ -166,6 +166,11 @@ class MongoAdapter{
         }
         
         
+    }
+
+    async getFilteredByCustomQuery(customQuery, collectionName)
+    {
+
     }
     
 }

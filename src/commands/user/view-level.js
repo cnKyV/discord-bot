@@ -1,6 +1,7 @@
 const {SlashCommandBuilder} = require('@discordjs/builders');
 const UserRepository = require('../../repository/UserRepository.js');
 
+
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('level')
