@@ -69,7 +69,7 @@ for (const file of eventFiles) {
 	}	
 }
 
-
+console.log("test");
 
 client.login(process.env.DISCORD_TOKEN);
 
