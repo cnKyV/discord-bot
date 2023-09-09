@@ -29,7 +29,7 @@ class CalculationHelper{
     
         return user;
     }
-}x
+}
 
 
 
