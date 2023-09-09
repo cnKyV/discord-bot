@@ -1,5 +1,5 @@
 const MongoAdapter = require("../adapters/MongoDbAdapter");
-const CalculationHelper = require('../services/CalculationHelperService');
+const CalculationHelper = require('../services/calculation-helper-service');
 const Collection = require('../consts/InfrastructureConsts');
 const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '../../.env') });

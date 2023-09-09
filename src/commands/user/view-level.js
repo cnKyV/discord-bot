@@ -1,5 +1,5 @@
 const {SlashCommandBuilder} = require('@discordjs/builders');
-const UserRepository = require('../../repository/UserRepository.js');
+const UserRepository = require('../../repository/user-repository.js');
 
 
 module.exports = {

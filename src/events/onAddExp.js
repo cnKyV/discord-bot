@@ -1,5 +1,5 @@
 const { Events } = require('discord.js');
-const UserRepository = require('../repository/UserRepository');
+const UserRepository = require('../repository/user-repository');
 
 module.exports = {
 	name: Events.MessageCreate,
