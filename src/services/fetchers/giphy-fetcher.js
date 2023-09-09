@@ -2,20 +2,21 @@ const http = require('http');
 const querystring = require('querystring');
 const fs = require('fs');
 const path = require('path');
-require('dotenv').config({ path: path.join(__dirname, '../../.env') });
+const GiphyConsts = require('../../consts/GiphyConsts');
+require('dotenv').config({ path: path.join(__dirname, '../../../.env') });
 
 class GiphyFetcher{
-    constructor(bundle)
+    constructor(bundle = 'original', limit = 25, offset = 0)
     {
         this.base_url = process.env.GIPHYAPI_BASEURL;
         this.api_key = process.env.GIPHYAPI_APIKEY;
-        this.limit = 25;
+        this.limit = limit;
         this.random_id = crypto.randomUUID();
         this.bundle = bundle;
-        this.offset = 0;
+        this.offset = offset;
     }
 
-    trend()
+    async trend(type)
     {
         let query = {
             api_key: this.api_key,
@@ -27,30 +28,20 @@ class GiphyFetcher{
 
         const queryParams = querystring.stringify(query);
 
-        const apiUrl = this.base_url+`gifs/trending?${queryParams}`;
+        const apiUrl = this.base_url+`${type}/trending?${queryParams}`;
 
-
-        const response = http.get(apiUrl, (response) => {
-            let responseData = '';
-
-            response.on('data',(chunk) => {responseData += chunk;});
-            response.on('end', ()=>{
-                const jsonData = JSON.parse(responseData);
-
-                console.log(jsonData);
-
-                return jsonData;
-            }).on('error', (error)=> {console.error(`Error: ${error.message}`)});
-        });
+        const response = await fetch(apiUrl);
+        return await response.text();
     }
 
 }
 
 
-(()=> {
-    let giphyFetcher = new GiphyFetcher('original');
-    let result = giphyFetcher.trend();
-    let data = JSON.stringify(result, null, 2);
+(async ()=> {
+    let giphyFetcher = new GiphyFetcher('original',1,0);
+    let result = await giphyFetcher.trend(GiphyConsts.EndpointType.Gif);
+    let parsedJson = JSON.parse(result);
+    let data = JSON.stringify(parsedJson, null, 2);
     fs.writeFile('test-data.json', data, (err)=>{
         if(err) throw err;
         console.log('Data written to file.');

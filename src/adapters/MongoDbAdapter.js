@@ -1,7 +1,6 @@
 const {MongoClient} = require('mongodb');
 var ObjectId = require('mongodb').ObjectId;
 const User = require('../models/User');
-const {UserUpdateModel} = require('../models/User');
 const Log = require('../models/Log');
 const Collection = require('../consts/InfrastructureConsts');
 const path = require('path');
@@ -47,7 +46,7 @@ class MongoAdapter{
         return this.client.topology.isConnected();
     }
 
-    getCollection(collectionName)
+    getCollection(collectionName) 
     {
         if(this.isConnected()){
             return this.client.db(this.dbName).collection(collectionName);
