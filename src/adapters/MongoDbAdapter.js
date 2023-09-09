@@ -1,8 +1,6 @@
 const {MongoClient} = require('mongodb');
 var ObjectId = require('mongodb').ObjectId;
 const User = require('../models/User');
-const Log = require('../models/Log');
-const Collection = require('../consts/InfrastructureConsts');
 const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '../../.env') });
 
