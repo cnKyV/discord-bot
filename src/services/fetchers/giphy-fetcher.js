@@ -54,17 +54,41 @@ class GiphyFetcher{
         return await response.text();
     }
 
-    async random(type, tag, overrideLimit=-1)
+    async random(type)
     {
+        const query = {
+            api_key: this.api_key,
+            random_id: this.random_id
+        };
+
+        const queryParams = querystring.stringify(query);
+
+        const apiUrl = this.base_url+`${type}/random?${queryParams}`;
         
+        const response = await fetch(apiUrl);
+        return await response.text();
     }
 
-    async translate(type, searchTerm, weirdness, overrideLimit=-1)
+    async translate(type, searchTerm, weirdness)
     {
+        const query = {
+            api_key: this.api_key,
+            s: searchTerm,
+            weirdness: weirdness,
+            random_id : this.random_id
+        };
 
+        const queryParams = querystring.stringify(query);
+
+        const apiUrl = this.base_url+`${type}/translate?${queryParams}`;
+
+        const response = await fetch(apiUrl);
+        return await response.text();
     }
 
 }
+
+module.exports = GiphyConsts;
 
 
 (async ()=> {
