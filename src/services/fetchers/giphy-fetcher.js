@@ -88,7 +88,7 @@ class GiphyFetcher{
 
 }
 
-module.exports = GiphyConsts;
+module.exports = GiphyFetcher;
 
 
 (async ()=> {
